@@ -42,7 +42,7 @@ namespace TRPO
         public static bool inAccount = false;
         public static int j = 0;
 
-        public static string connectionString = "Data Source=192.168.227.12;Initial Catalog=Konditerka;User id=user05;Password=05;";
+        public static string connectionString = "Data Source=localhost;Initial Catalog=Konditerka;Integrated Security=True;";
         public MainWindow()
         {
             InitializeComponent();
@@ -202,7 +202,48 @@ namespace TRPO
 
         private void EditButton_Click(object sender, RoutedEventArgs e)
         {
+            Button button = (Button)sender;
+            string query = $"SELECT * FROM Products WHERE ID = {button.Tag}";
+            Product product = new Product();
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                using (SqlCommand cmd = new SqlCommand(query, connection))
+                {
+                    var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        product.ID = reader.GetInt64(0);
+                        product.Name = reader.GetString(1);
+                        product.Kkal = (double)reader.GetDecimal(2);
+                        product.ImagePath = FixedImagePath(reader.GetString(3));
+                        product.Price = (float)reader.GetDecimal(4);
+                        product.Description = reader.GetString(5);
+                        product.Category = reader.GetInt64(6);
+                    }
+                }
+            }
+            EditAddProduct w = new EditAddProduct(product);
+            w.Owner = this;
+            Effects.DarkEffect(this);
 
+            w.ShowDialog();
+
+            Effects.ClearEffect(this);
+            ProductListCategories();
+        }
+
+        private void AddButtonProduct_Click(object sender, RoutedEventArgs e)
+        {
+            Button button = (Button)sender;
+            EditAddProduct w = new EditAddProduct();
+            w.Owner = this;
+            Effects.DarkEffect(this);
+
+            w.ShowDialog();
+
+            Effects.ClearEffect(this);
+            ProductListCategories();
         }
     }
 

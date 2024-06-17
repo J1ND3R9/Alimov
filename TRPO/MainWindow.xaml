@@ -131,6 +131,17 @@
                 <ColumnDefinition Width="815*"/>
                 <ColumnDefinition Width="100*"/>
             </Grid.ColumnDefinitions>
+            <Button Content="Добавить товар" Height="50" FontSize="16pt" FontWeight="Medium" VerticalAlignment="Top" x:Name="AddButtonProduct" Click="AddButtonProduct_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ElementName=Logo, Path=Tag}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
             <Grid Grid.Column="1">
                 <Border>
                     <ListBox x:Name="ListBoxItemsProduct">

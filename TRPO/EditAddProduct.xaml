@@ -25,7 +25,9 @@
                     <ComboBox Width="200" VerticalAlignment="Bottom" Margin="15,0,0,0" x:Name="cbCategories"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Цена:" FontSize="14pt" FontWeight="Medium" Margin="0,5,0,0"/>
+                    <TextBlock Text="Калории в 100г:" FontSize="14pt" FontWeight="Medium" Margin="0,5,0,0"/>
+                    <TextBox FontSize="12pt" FontWeight="Regular" Width="100" VerticalAlignment="Bottom" Margin="15,0,0,0" x:Name="caloriesTextBlock"/>
+                    <TextBlock Text="Цена:" FontSize="14pt" FontWeight="Medium" Margin="30,5,0,0"/>
                     <TextBox FontSize="12pt" FontWeight="Regular" Width="100" VerticalAlignment="Bottom" Margin="15,0,0,0" x:Name="priceTextBlock"/>
                 </StackPanel>
                 <Button Margin="50" Content="Добавить" Width="100" Height="40" FontSize="14pt" FontWeight="Medium" x:Name="AddButton" Click="AddButton_Click"/>

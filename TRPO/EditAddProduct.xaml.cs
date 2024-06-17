@@ -25,15 +25,23 @@ namespace TRPO
         public EditAddProduct(Product product = null)
         {
             InitializeComponent();
+            cbCategories.ItemsSource = GetCategories();
             if (product == null)
             {
                 textBlockTitle.Text = "Добавление продукта";
                 this.Title = "Добавление";
             }
             else
+            {
                 this.product = product;
-            cbCategories.ItemsSource = GetCategories();
-                
+                textBlockTitleProduct.Text = product.Name;
+                textBlockDescription.Text = product.Description;
+                priceTextBlock.Text = product.Price.ToString();
+                AddButton.Content = "Изменить";
+                AddButton.Tag = product.ID;
+                caloriesTextBlock.Text = product.Kkal.ToString();
+            }
+
         }
 
         private IEnumerable<string> GetCategories()
@@ -57,12 +65,15 @@ namespace TRPO
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            string name = textBlockTitle.Text;
+            string name = textBlockTitleProduct.Text;
             if (!isUnique(name))
             {
-                MessageBox.Show("Товар с таким наименованием уже есть в базе данных");
-                textBlockTitle.Focus();
-                return;
+                if (this.product == null)
+                {
+                    MessageBox.Show("Товар с таким наименованием уже есть в базе данных");
+                    textBlockTitle.Focus();
+                    return;
+                }
             }
             if (cbCategories.SelectedIndex == -1)
             {
@@ -82,6 +93,30 @@ namespace TRPO
                 priceTextBlock.Focus();
                 return;
             }
+            if (price <= 0)
+            {
+                MessageBox.Show("Цена не может быть менее 1 рубля!");
+                priceTextBlock.Focus();
+                return;
+
+            }
+            double kkal;
+            try
+            {
+                kkal = Convert.ToDouble(caloriesTextBlock.Text);
+            }
+            catch
+            {
+                MessageBox.Show("Ошибка преобразования калорий");
+                caloriesTextBlock.Focus();
+                return;
+            }
+            if (kkal <= 0)
+            {
+                MessageBox.Show("Калории не могут быть меньше 1!");
+                caloriesTextBlock.Focus();
+                return;
+            }
             long id = GetCategoryID(category);
             if (id == -1)
             {
@@ -89,6 +124,39 @@ namespace TRPO
                 cbCategories.ItemsSource = GetCategories();
                 cbCategories.Focus();
                 return;
+            }
+
+            string query = "";
+            if (this.product != null)
+            {
+                query = "UPDATE Products " +
+                    "SET Name = @name, Calories = @calories, Price = @price, Description = @description, Category = @category " +
+                    "WHERE ID = @id";
+            }
+            else
+            {
+                query = "INSERT INTO Products VALUES (@name, @calories, @image, @price, @description, @category)";
+            }
+            using (SqlConnection con = new SqlConnection(MainWindow.connectionString))
+            {
+                con.Open();
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    cmd.Parameters.AddWithValue("@name", SqlDbType.NVarChar).Value = name;
+                    cmd.Parameters.AddWithValue("@calories", SqlDbType.Decimal).Value = (decimal)kkal;
+                    cmd.Parameters.AddWithValue("@image", SqlDbType.NVarChar).Value = "-";
+                    cmd.Parameters.AddWithValue("@price", SqlDbType.Decimal).Value = (decimal)price;
+                    cmd.Parameters.AddWithValue("@description", SqlDbType.NVarChar).Value = textBlockDescription.Text;
+                    cmd.Parameters.AddWithValue("@category", SqlDbType.BigInt).Value = GetCategoryID(cbCategories.SelectedItem.ToString());
+                    if (product != null)
+                        cmd.Parameters.AddWithValue("@id", SqlDbType.BigInt).Value = AddButton.Tag;
+                    cmd.ExecuteNonQuery();
+                }
+                if (product == null)
+                    MessageBox.Show("Товар добавлен");
+                else
+                    MessageBox.Show("Товар изменен");
+                Close();
             }
 
         }
@@ -120,11 +188,12 @@ namespace TRPO
         private bool isUnique(string name)
         {
             string query = "SELECT * FROM Products WHERE Name = @name";
-            using (SqlConnection con =  new SqlConnection(MainWindow.connectionString))
+            using (SqlConnection con = new SqlConnection(MainWindow.connectionString))
             {
                 con.Open();
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
+                    cmd.Parameters.AddWithValue("@name", SqlDbType.NVarChar).Value = name;
                     object result = cmd.ExecuteScalar();
                     if (result != null)
                         return false;
